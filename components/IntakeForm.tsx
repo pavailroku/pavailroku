@@ -47,8 +47,9 @@ export function IntakeForm() {
   return (
     <form onSubmit={onSubmit} className="card grid gap-4 max-w-xl">
       <div>
-        <h1 className="display text-3xl">Open a briefing</h1>
-        <p className="text-sm text-[#cbbbe3] mt-2">
+        <p className="kicker">Optional form</p>
+        <h1 className="display h1" style={{ fontSize: "clamp(1.8rem, 3vw, 2.6rem)" }}>Open a briefing</h1>
+        <p className="lede">
           Three fields. No Boolean strings, no LinkedIn required. A hiring manager
           can finish this in 30 seconds.
         </p>

@@ -8,10 +8,12 @@ const file = path.join(process.cwd(), "data", "briefings.json");
 const mem = new Map<string, Briefing>();
 
 function load() {
-  if (mem.size || !existsSync(file)) return;
+  if (!existsSync(file)) return;
   try {
     const rows = JSON.parse(readFileSync(file, "utf8")) as Briefing[];
-    for (const b of rows) mem.set(b.id, b);
+    for (const b of rows) {
+      if (!mem.has(b.id)) mem.set(b.id, b);
+    }
   } catch {
     /* empty */
   }
@@ -47,6 +49,34 @@ export function listBriefings(): Briefing[] {
 export function getBriefing(id: string): Briefing | undefined {
   load();
   return mem.get(id);
+}
+
+export function patchBriefing(
+  id: string,
+  patch: Partial<
+    Pick<
+      Briefing,
+      | "title"
+      | "role"
+      | "skills"
+      | "whyHiring"
+      | "countrySet"
+      | "budget"
+      | "currency"
+      | "visaRequired"
+      | "expedite"
+      | "hmNotes"
+      | "viewerRole"
+    >
+  >,
+): Briefing | undefined {
+  load();
+  const cur = mem.get(id);
+  if (!cur) return undefined;
+  const next = { ...cur, ...patch };
+  mem.set(id, next);
+  persist();
+  return next;
 }
 
 export function updateBriefing(

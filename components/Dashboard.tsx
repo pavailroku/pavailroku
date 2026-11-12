@@ -1,5 +1,6 @@
 "use client";
 
+import { fromCards, InsightGrid } from "@/components/viz/InsightCharts";
 import type { EngineResult, ViewerRole } from "@/lib/domain/types";
 import { money, prettyDate } from "@/lib/format";
 import Link from "next/link";
@@ -59,9 +60,9 @@ export function Dashboard({ initial }: { initial: EngineResult }) {
     <div className="grid gap-6">
       <div className="no-print flex flex-wrap items-center gap-3 justify-between">
         <div>
-          <p className="chip chip-purple">Roku Talent Intelligence</p>
-          <h1 className="display text-3xl mt-2">{engine.briefing.role}</h1>
-          <p className="text-sm text-[#cbbbe3]">{roleHint(engine.briefing.viewerRole)}</p>
+          <p className="kicker">Roku Talent Intelligence</p>
+          <h1 className="display h1" style={{ fontSize: "clamp(1.8rem, 3vw, 2.6rem)" }}>{engine.briefing.role}</h1>
+          <p className="lede" style={{ marginTop: "0.6rem" }}>{roleHint(engine.briefing.viewerRole)}</p>
         </div>
         <div className="flex flex-wrap gap-2">
           {(
@@ -93,8 +94,8 @@ export function Dashboard({ initial }: { initial: EngineResult }) {
       </div>
 
       <section className="card" style={{ background: "linear-gradient(120deg, #853dff 0%, #4f01a3 58%, #20004c 100%)" }}>
-        <p className="text-xs uppercase tracking-[0.2em] text-white/80">Decision</p>
-        <p className="display text-2xl md:text-3xl mt-3">{decision.decisionLine}</p>
+        <p className="kicker" style={{ color: "rgba(255,255,255,0.88)" }}>Decision</p>
+        <h2 className="display h2 mt-3 text-white">{decision.decisionLine}</h2>
         <p className="mt-3 text-white/85 max-w-3xl">{decision.why}</p>
         {!engine.grounding.ok ? (
           <p className="chip chip-orange mt-3">
@@ -132,6 +133,15 @@ export function Dashboard({ initial }: { initial: EngineResult }) {
             {rec?.start.modelled ? "Modelled from market + notice norms" : "Measured from Greenhouse"}
           </p>
         </div>
+      </section>
+
+      <section className="card">
+        <p className="kicker">Visual intelligence</p>
+        <h2 className="display h2">Talent density, score, and money</h2>
+        <p className="lede" style={{ fontSize: "1rem" }}>
+          Same briefing, drawn not just written. Bars and the scatter use the scored cities above — not decoration.
+        </p>
+        <InsightGrid rows={fromCards(engine.cards)} />
       </section>
 
       <section className="card">

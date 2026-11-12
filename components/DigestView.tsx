@@ -31,10 +31,10 @@ export function DigestView({ initial }: { initial: Digest }) {
           </span>
         </div>
         <div className="px-6 py-8 md:px-8">
-          <p className="text-[11px] uppercase tracking-[0.2em] text-[var(--roku-teal)]">
+          <p className="kicker">
             {cadence} sourcing pulse · For recruiters · UK & US desks
           </p>
-          <h1 className="display text-4xl md:text-5xl mt-3 text-white">
+          <h1 className="display h1 mt-3 text-white">
             Only what maps to roles we hire
           </h1>
           <p className="mt-3 text-white/85 max-w-2xl">
