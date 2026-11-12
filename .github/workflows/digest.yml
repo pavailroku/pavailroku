@@ -1,0 +1,22 @@
+name: Recruiter talent digest
+on:
+  workflow_dispatch:
+    inputs:
+      cadence:
+        description: weekly or monthly
+        default: weekly
+  schedule:
+    # Mondays 08:00 UTC — weekly UK/US sourcing pulse
+    - cron: "0 8 * * 1"
+    # First of month 08:00 UTC
+    - cron: "0 8 1 * *"
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    if: ${{ vars.DIGEST_BASE_URL != '' }}
+    steps:
+      - name: Trigger send
+        env:
+          BASE: ${{ vars.DIGEST_BASE_URL }}
+          CADENCE: ${{ github.event.inputs.cadence || (github.event.schedule == '0 8 1 * *' && 'monthly' || 'weekly') }}
+        run: curl -fsS -X POST "$BASE/api/reports/send?cadence=$CADENCE"
