@@ -6,27 +6,28 @@ test("chat home is the product", async ({ page }) => {
   await expect(page.getByLabel("Ask Talent Intelligence")).toBeVisible();
 });
 
-test("any typed ask still returns live data", async ({ page }) => {
+test("typed question opens a live talent dashboard", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "UK Senior SWE, £90k" }).click();
+  await expect(page.getByText("Recommended city")).toBeVisible({ timeout: 60_000 });
+  await expect(page.getByRole("heading", { name: /Talent density/ })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Market Pulse" })).toBeVisible();
+  await expect(page.getByText(/Cambridge|Manchester|Remote UK|London|Cardiff/).first()).toBeVisible();
+  await expect(page.getByText("P50", { exact: true }).first()).toBeVisible();
+});
+
+test("vague ask still opens the dashboard", async ({ page }) => {
   await page.goto("/");
   await page.getByLabel("Ask Talent Intelligence").fill("where should we hire");
   await page.getByRole("button", { name: "Send" }).click();
-  await expect(page.getByText(/Live briefing|Recommend |Manchester|Cambridge/i).first()).toBeVisible({
-    timeout: 60_000,
-  });
-});
-
-test("typed UK Senior SWE question returns a live briefing", async ({ page }) => {
-  await page.goto("/");
-  await page.getByRole("button", { name: "UK Senior SWE, £90k" }).click();
-  await expect(page.getByText(/Live briefing/i).first()).toBeVisible({ timeout: 60_000 });
-  await expect(page.getByText(/Cambridge|Manchester|Remote UK|London|Cardiff/).first()).toBeVisible();
-  await expect(page.getByText(/does not include LinkedIn Talent Insights/i).first()).toBeVisible();
+  await expect(page.getByText("Recommended city")).toBeVisible({ timeout: 60_000 });
+  await expect(page.getByText("Composite score")).toBeVisible();
 });
 
 test("weekly digest from chat", async ({ page }) => {
   await page.goto("/");
   await page.getByRole("button", { name: "Weekly digest" }).click();
-  await expect(page.getByText(/Live digest|Quiet period|What to source|sourcing pulse/i).first()).toBeVisible({
+  await expect(page.getByRole("heading", { name: /Only what maps to roles we hire/ })).toBeVisible({
     timeout: 60_000,
   });
 });

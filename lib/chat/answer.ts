@@ -1,6 +1,6 @@
 import type { Digest } from "@/lib/digest/build";
 import type { EngineResult, LocationCard, SourceStatus } from "@/lib/domain/types";
-import { money, prettyDate } from "@/lib/format";
+import { prettyDate } from "@/lib/format";
 
 export type ChatLocationPeek = {
   id: string;
@@ -23,6 +23,8 @@ export type ChatAnswer = {
   sources: { id: string; status: SourceStatus }[];
   locations: ChatLocationPeek[];
   briefingId?: string;
+  engine?: EngineResult;
+  digest?: Digest;
 };
 
 function liveSources(status: Record<string, SourceStatus> | undefined): ChatAnswer["sources"] {
@@ -53,18 +55,6 @@ function peek(cards: LocationCard[]): ChatLocationPeek[] {
     }));
 }
 
-function cityInsight(c: LocationCard): string {
-  const pay = money(c.marketPay, c.currency);
-  const bud = money(c.budget, c.currency);
-  const presence = c.employingPresence
-    ? c.presenceSource === "demo"
-      ? "Roku already employs here (org labelled Demo until Glean is on)"
-      : "Roku already employs here"
-    : "exploratory — no employing entity; do not open a req without legal review";
-  const teams = c.teams.length ? ` Teams on the map: ${c.teams.slice(0, 3).join(", ")}.` : "";
-  return `${c.name}: ${c.verdict}. ${bud} vs advertised-ish market ${pay}. Cost-of-living index ${c.colIndex} (national 100). Housing pressure ${Math.round(c.housingPressure)}. Inflation ${c.inflationPct}%. Talent ${Math.round(c.talent)}/100. P50 in-seat ${prettyDate(c.start.p50Start)}; P75 ${prettyDate(c.start.p75Start)}; first payroll ${c.start.firstPayrollMonth}. ${presence}.${teams}`;
-}
-
 function focusCard(engine: EngineResult, hint?: string): LocationCard | undefined {
   if (hint) {
     const hit = engine.cards.find((c) => c.locationId === hint || c.name.toLowerCase().includes(hint.replace(/-/g, " ")));
@@ -81,60 +71,18 @@ export function answerFromEngine(
   const decision = engine.grounding.recommendation;
   const sources = liveSources(engine.sourceStatus);
   const live = anyLive(sources);
-  const lines: string[] = [];
-
-  if (opts?.locationHint && rec) {
-    lines.push(cityInsight(rec));
-  } else {
-    lines.push(decision.decisionLine);
-    if (decision.why) lines.push(decision.why);
-    if (rec) lines.push(cityInsight(rec));
-  }
-
-  const others = engine.cards.filter((c) => c.locationId !== rec?.locationId).slice(0, 4);
-  if (others.length) {
-    lines.push("Also scored this turn:\n" + others.map((c) => `• ${cityInsight(c)}`).join("\n"));
-  }
-
-  const infl = engine.evidence?.find((e) => e.kind === "inflation");
-  if (infl) {
-    lines.push(
-      `Official inflation: ${infl.value}${infl.unit ?? "%"} as of ${prettyDate(String(infl.asOf))} (${infl.sourceName}).`,
-    );
-  }
-
-  const events = engine.events.slice(0, 6);
-  if (events.length) {
-    lines.push(
-      "Live market (only cited events, not guesses):\n" +
-        events
-          .map(
-            (e) =>
-              `• ${e.company} — ${e.summary} (${prettyDate(e.date)}, ${e.sourceName}${e.url ? `; ${e.url}` : ""})`,
-          )
-          .join("\n"),
-    );
-  } else if (!live) {
-    lines.push("Live market feeds did not respond this turn. City money still uses dated official tables, not guesses.");
-  }
-
-  const liveBits = sources.filter((s) => s.status === "live").map((s) => s.id);
-  const offBits = sources.filter((s) => s.status !== "live").map((s) => s.id);
-  lines.push(
-    `Sources this turn: live [${liveBits.join(", ") || "none"}]. Offline [${offBits.join(", ") || "none"}].`,
-  );
-  lines.push(engine.completeness.banner);
-  if (decision.risks.length) {
-    lines.push("Watch: " + decision.risks.slice(0, 4).join(" "));
-  }
-
+  const headline =
+    opts?.locationHint && rec
+      ? `${rec.name}: ${rec.verdict}. P50 in-seat ${prettyDate(rec.start.p50Start)}.`
+      : decision.decisionLine;
   return {
-    text: lines.join("\n\n"),
+    text: `${headline} Dashboard below is the live scorecard — talent density, money, start dates, market pulse.`,
     kind: opts?.followup ? "followup" : "briefing",
     live,
     sources,
     locations: peek(engine.cards),
     briefingId: engine.briefing.id,
+    engine,
   };
 }
 
@@ -172,6 +120,7 @@ export function answerFromDigest(digest: Digest): ChatAnswer {
       { id: "layoffs-uk", status: digest.live ? "live" : "offline" },
     ],
     locations: [],
+    digest,
   };
 }
 

@@ -262,6 +262,12 @@ a { color: var(--roku-teal); }
   width: 100%;
   max-width: 52rem;
 }
+.chat-app.has-board .chat-thread {
+  max-width: 72rem;
+}
+.chat-hero-compact {
+  margin-bottom: 1.25rem;
+}
 .chat-hero { margin-bottom: 1.75rem; }
 .example-row {
   display: flex;
