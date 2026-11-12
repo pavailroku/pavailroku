@@ -1,0 +1,123 @@
+import type { CountrySet, LocationDefinition } from "./types";
+
+export const LOCATIONS: LocationDefinition[] = [
+  {
+    id: "cambridge",
+    name: "Cambridge",
+    country: "UK",
+    region: "East of England",
+    employingPresence: true,
+    remote: false,
+    currency: "GBP",
+    adzunaWhere: "Cambridge",
+    watchlist: ["arm", "qualcomm", "amazon", "raspberry-pi", "mathworks"],
+  },
+  {
+    id: "manchester",
+    name: "Manchester",
+    country: "UK",
+    region: "North West",
+    employingPresence: true,
+    remote: false,
+    currency: "GBP",
+    adzunaWhere: "Manchester",
+    watchlist: ["bbc", "autotrader", "booking.com", "wise", "amazon"],
+  },
+  {
+    id: "cardiff",
+    name: "Cardiff",
+    country: "UK",
+    region: "Wales",
+    employingPresence: false,
+    remote: false,
+    currency: "GBP",
+    adzunaWhere: "Cardiff",
+    watchlist: ["bbc", "iqe", "general-dynamics"],
+  },
+  {
+    id: "london",
+    name: "London",
+    country: "UK",
+    region: "London",
+    employingPresence: false,
+    remote: false,
+    currency: "GBP",
+    adzunaWhere: "London",
+    watchlist: ["amazon", "google", "microsoft", "sky", "netflix", "deepmind"],
+  },
+  {
+    id: "remote-uk",
+    name: "Remote UK",
+    country: "UK",
+    region: "United Kingdom",
+    employingPresence: true,
+    remote: true,
+    currency: "GBP",
+    adzunaWhere: "UK",
+    watchlist: ["amazon", "google", "microsoft"],
+  },
+  {
+    id: "san-jose",
+    name: "San Jose / Bay Area",
+    country: "US",
+    region: "California",
+    employingPresence: true,
+    remote: false,
+    currency: "USD",
+    adzunaWhere: "San Jose",
+    watchlist: ["apple", "google", "meta", "netflix", "amazon", "nvidia"],
+  },
+  {
+    id: "austin",
+    name: "Austin",
+    country: "US",
+    region: "Texas",
+    employingPresence: true,
+    remote: false,
+    currency: "USD",
+    adzunaWhere: "Austin",
+    watchlist: ["apple", "amazon", "tesla", "oracle", "samsung"],
+  },
+  {
+    id: "new-york",
+    name: "New York",
+    country: "US",
+    region: "New York",
+    employingPresence: true,
+    remote: false,
+    currency: "USD",
+    adzunaWhere: "New York",
+    watchlist: ["google", "meta", "amazon", "spotify", "bloomberg"],
+  },
+  {
+    id: "los-angeles",
+    name: "Los Angeles",
+    country: "US",
+    region: "California",
+    employingPresence: false,
+    remote: false,
+    currency: "USD",
+    adzunaWhere: "Los Angeles",
+    watchlist: ["netflix", "amazon", "disney", "snap"],
+  },
+  {
+    id: "remote-us",
+    name: "Remote US",
+    country: "US",
+    region: "United States",
+    employingPresence: true,
+    remote: true,
+    currency: "USD",
+    adzunaWhere: "United States",
+    watchlist: ["amazon", "google", "microsoft"],
+  },
+];
+
+export function locationsFor(set: CountrySet): LocationDefinition[] {
+  if (set === "both") return LOCATIONS;
+  return LOCATIONS.filter((l) => l.country === set);
+}
+
+export function locationById(id: string): LocationDefinition | undefined {
+  return LOCATIONS.find((l) => l.id === id);
+}

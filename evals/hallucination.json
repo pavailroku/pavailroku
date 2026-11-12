@@ -1,0 +1,112 @@
+{
+  "cases": [
+    {
+      "id": "uk-swe-clean",
+      "expect": "pass",
+      "payload": {
+        "decisionLine": "Recommend Manchester. P50 in-seat 2026-06-14.",
+        "why": "COL index 96.",
+        "risks": [],
+        "citations": ["ev_col_manchester"]
+      }
+    },
+    {
+      "id": "layoff-absent-amazon",
+      "expect": "fail",
+      "payload": {
+        "decisionLine": "Amazon Cambridge cut 200 this week",
+        "why": "invented",
+        "risks": [],
+        "citations": []
+      }
+    },
+    {
+      "id": "invented-salary",
+      "expect": "fail",
+      "payload": {
+        "decisionLine": "Budget £85,000 is perfect",
+        "why": "no",
+        "risks": [],
+        "citations": []
+      }
+    },
+    {
+      "id": "invented-date",
+      "expect": "fail",
+      "payload": {
+        "decisionLine": "They start 12 June 2027",
+        "why": "no",
+        "risks": [],
+        "citations": []
+      }
+    },
+    {
+      "id": "unknown-citation",
+      "expect": "fail",
+      "payload": {
+        "decisionLine": "Recommend Manchester. P50 in-seat 2026-06-14.",
+        "why": "COL index 96.",
+        "risks": [],
+        "citations": ["ev_fake"]
+      }
+    },
+    {
+      "id": "us-swe-austin-date",
+      "expect": "pass",
+      "payload": {
+        "decisionLine": "Recommend Manchester. P50 in-seat 2026-06-14.",
+        "why": "ok",
+        "risks": [],
+        "citations": []
+      }
+    },
+    {
+      "id": "named-candidate",
+      "expect": "fail",
+      "payload": {
+        "decisionLine": "Do not hire candidate Jane Doe from Arm",
+        "why": "pii",
+        "risks": [],
+        "citations": []
+      }
+    },
+    {
+      "id": "no-market-template-ok",
+      "expect": "pass",
+      "useTemplate": true
+    },
+    {
+      "id": "layoff-present-ok",
+      "expect": "pass",
+      "extraEvidence": [
+        {
+          "id": "ev_layoff_amazon",
+          "kind": "layoff",
+          "value": "Amazon",
+          "company": "Amazon",
+          "asOf": "2026-10-01",
+          "url": "https://example.com",
+          "sourceName": "Talent Risk",
+          "confidence": "medium",
+          "label": "Amazon cuts"
+        }
+      ],
+      "payload": {
+        "decisionLine": "Amazon laid off teams — Manchester still recommended. P50 in-seat 2026-06-14.",
+        "why": "sourced",
+        "risks": [],
+        "citations": ["ev_layoff_amazon"]
+      }
+    },
+    {
+      "id": "url-not-needed-if-no-url-cited",
+      "expect": "pass",
+      "payload": {
+        "decisionLine": "Recommend Manchester. P50 in-seat 2026-06-14.",
+        "why": "COL index 96.",
+        "risks": [],
+        "citations": ["ev_col_manchester"]
+      }
+    }
+  ]
+}
