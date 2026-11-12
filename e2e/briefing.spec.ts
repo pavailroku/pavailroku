@@ -13,6 +13,13 @@ test("non-technical hiring manager briefing", async ({ page }) => {
   await expect(page.getByText(/Cambridge|Manchester|Remote UK/).first()).toBeVisible();
 });
 
+test("TA leadership demo opens a scored briefing", async ({ page }) => {
+  await page.goto("/demo");
+  await expect(page.getByText(/Decision/)).toBeVisible({ timeout: 45_000 });
+  await expect(page.getByText(/Not connected/).first()).toBeVisible();
+  await expect(page.getByText(/Glean \(internal search/).first()).toBeVisible();
+});
+
 test("weekly digest explains relevancy", async ({ page }) => {
   await page.goto("/reports/weekly");
   await expect(page.getByRole("heading", { name: /Only what maps to roles we hire/ })).toBeVisible({

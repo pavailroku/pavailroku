@@ -1,4 +1,5 @@
 import { AppShell } from "@/components/AppShell";
+import { ConnectionStrip } from "@/components/ConnectionStrip";
 import { Dashboard } from "@/components/Dashboard";
 import { getBriefing } from "@/lib/repo/memory";
 import { runEngine } from "@/lib/fusion";
@@ -17,6 +18,7 @@ export default async function BriefingPage({
   const engine = await runEngine(briefing);
   return (
     <AppShell>
+      <ConnectionStrip />
       <Dashboard initial={engine} />
     </AppShell>
   );

@@ -18,9 +18,11 @@ import { recommend } from "@/lib/recommend";
 import { compositeOf, componentScores, pickRecommended } from "@/lib/score";
 import { parseGreenhouseOfferDays, parseTalentBoost } from "@/lib/sources/ingest";
 import { demoPresence } from "@/lib/sources/demo-presence";
+import { gleanReady } from "@/lib/connections";
 import { fetchAdzuna } from "@/lib/sources/adzuna";
 import { fetchLayoffsUk } from "@/lib/sources/layoffs-uk";
 import { fetchCpihYoY } from "@/lib/sources/ons";
+import { searchGlean, type GleanHit } from "@/lib/sources/glean";
 import { fetchTalentRiskEvents, relevantEvents } from "@/lib/sources/talent-risk";
 import { forecastStart } from "@/lib/time-to-hire";
 import { countriesFor, watchlistFor } from "@/lib/watchlist";
@@ -36,6 +38,7 @@ export type LiveBundle = {
   sourceStatus: Record<string, SourceStatus>;
   lastLiveFetch: Record<string, string | null>;
   adzuna?: AdzunaHit[];
+  gleanHits?: GleanHit[];
 };
 
 export async function fetchLive(briefing: Briefing): Promise<LiveBundle> {
@@ -43,14 +46,16 @@ export async function fetchLive(briefing: Briefing): Promise<LiveBundle> {
     "talent-risk": "offline",
     "layoffs-uk": "offline",
     ons: "offline",
-    adzuna: process.env.ADZUNA_APP_ID ? "offline" : "offline",
-    glean: process.env.GLEAN_API_TOKEN ? "offline" : "offline",
+      adzuna: process.env.ADZUNA_APP_ID ? "offline" : "offline",
+      glean: gleanReady() ? "offline" : "offline",
+      confluence: process.env.CONFLUENCE_API_TOKEN ? "offline" : "offline",
   };
   const lastLiveFetch: Record<string, string | null> = {
     "talent-risk": null,
     "layoffs-uk": null,
     ons: null,
     adzuna: null,
+    glean: null,
   };
   const events: MarketEvent[] = [];
 
@@ -89,7 +94,26 @@ export async function fetchLive(briefing: Briefing): Promise<LiveBundle> {
     lastLiveFetch.adzuna = new Date().toISOString();
   }
 
-  return { events, ukInflation, sourceStatus, lastLiveFetch, adzuna: adz };
+  let gleanHits: GleanHit[] = [];
+  if (gleanReady()) {
+    try {
+      const hits = await searchGlean(
+        `${briefing.role} ${briefing.skills.slice(0, 3).join(" ")} Cambridge Manchester engineering team`,
+      );
+      if (hits) {
+        gleanHits = hits;
+        sourceStatus.glean = "live";
+        lastLiveFetch.glean = new Date().toISOString();
+        if (hits.some((h) => (h.datasource ?? "").toLowerCase().includes("confluence"))) {
+          sourceStatus.confluence = "live";
+        }
+      }
+    } catch {
+      sourceStatus.glean = "offline";
+    }
+  }
+
+  return { events, ukInflation, sourceStatus, lastLiveFetch, adzuna: adz, gleanHits };
 }
 
 export function fuse(briefing: Briefing, live: LiveBundle): EngineResult {
@@ -127,7 +151,21 @@ export function fuse(briefing: Briefing, live: LiveBundle): EngineResult {
 
   const cards: LocationCard[] = locs.map((loc) => {
     const econ = economicsForLocation(loc.id, briefing.budget);
-    const presence = demoPresence(loc.id);
+    const seed = demoPresence(loc.id);
+    const presence = {
+      ...seed,
+      teams: [...seed.teams],
+      people: seed.people.map((p) => ({ ...p })),
+    };
+    const gleanForLoc =
+      live.gleanHits?.filter((h) =>
+        `${h.title} ${h.snippet}`.toLowerCase().includes(loc.name.toLowerCase().split(" / ")[0]!),
+      ) ?? [];
+    if (gleanForLoc.length) {
+      presence.work = gleanForLoc.map((h) => h.snippet || h.title).join(" ");
+      presence.people = [];
+      presence.presenceScore = Math.max(presence.presenceScore, 70);
+    }
     const locEvents = pulse.filter((e) => {
       const n = e.company.toLowerCase();
       return loc.watchlist.some((w) => n.includes(w));
@@ -271,7 +309,7 @@ export function fuse(briefing: Briefing, live: LiveBundle): EngineResult {
       teams: presence.teams,
       people: presence.people,
       work: presence.work,
-      presenceSource: "demo",
+      presenceSource: gleanForLoc.length ? "live" : "demo",
       skills: econ.skills,
       yoe: econ.yoe,
       employers: econ.employers,
@@ -322,12 +360,15 @@ export async function runEngine(briefing: Briefing): Promise<EngineResult> {
         "layoffs-uk": "offline",
         ons: "offline",
         adzuna: "offline",
+        glean: "offline",
+        confluence: "offline",
       },
       lastLiveFetch: {
         "talent-risk": null,
         "layoffs-uk": null,
         ons: null,
         adzuna: null,
+        glean: null,
       },
     });
   }

@@ -19,12 +19,19 @@ export async function searchGlean(query: string): Promise<GleanHit[] | null> {
       metadata?: { datasource?: string };
     }[];
   }>(`${host.replace(/\/$/, "")}/rest/api/v1/search`, {
+    method: "POST",
     headers: {
       Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
+    },
+    body: {
+      query,
+      pageSize: 8,
+      requestOptions: {
+        datasourcesFilter: ["confluence"],
+        facetBucketSize: 20,
+      },
     },
   });
-  void query;
   return (
     json.results?.map((r) => ({
       title: r.title ?? "Untitled",

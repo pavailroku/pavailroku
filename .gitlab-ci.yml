@@ -1,0 +1,24 @@
+# Roku GitLab: test + image. Host by running the image or `npm run demo`.
+stages:
+  - test
+  - build
+
+node:22:
+  image: node:22
+  stage: test
+  script:
+    - npm ci
+    - npm test
+    - npm run typecheck
+    - npm run build
+
+docker:
+  image: docker:24
+  stage: build
+  services:
+    - docker:24-dind
+  script:
+    - docker build -t roku-talent-intelligence-engine:$CI_COMMIT_SHORT_SHA .
+  rules:
+    - if: $CI_COMMIT_BRANCH
+      when: manual

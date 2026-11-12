@@ -1,4 +1,5 @@
 import { AppShell } from "@/components/AppShell";
+import { ConnectionStrip } from "@/components/ConnectionStrip";
 import Link from "next/link";
 
 export default function Home() {
@@ -15,12 +16,18 @@ export default function Home() {
           engineering should plan for someone in seat.
         </p>
         <div className="flex flex-wrap gap-3 mt-8">
-          <Link href="/briefings/new" className="btn btn-primary no-underline">
-            New briefing (30 seconds)
+          <Link href="/demo" className="btn btn-primary no-underline">
+            Run TA leadership demo
+          </Link>
+          <Link href="/briefings/new" className="btn btn-ghost no-underline">
+            New briefing
           </Link>
           <Link href="/reports/weekly" className="btn btn-ghost no-underline">
             Weekly recruiter digest
           </Link>
+        </div>
+        <div className="mt-8">
+          <ConnectionStrip />
         </div>
       </section>
       <section className="grid md:grid-cols-3 gap-4 mt-12">
