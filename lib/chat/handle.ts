@@ -4,7 +4,8 @@ import { buildDigest } from "@/lib/digest/build";
 import { runEngine } from "@/lib/fusion";
 import { addUpload, createBriefing, getBriefing, patchBriefing } from "@/lib/repo/memory";
 import type { Briefing } from "@/lib/domain/types";
-import { answerFromDigest, answerFromEngine, clarifyText, type ChatAnswer } from "./answer";
+import { answerFromDigest, answerFromEngine, type ChatAnswer } from "./answer";
+import { assumptionLine, fillAsk } from "./defaults";
 import { parseChat } from "./parse";
 
 export type ChatTurn = {
@@ -70,18 +71,34 @@ export async function handleChat(sessionId: string | undefined, message: string)
   const parsed = parseChat(text, Boolean(session.briefingId));
   let answer: ChatAnswer;
 
-  if (parsed.intent === "clarify") {
-    answer = clarifyText(parsed.missing, Boolean(parsed.role || parsed.budget || parsed.countrySet));
-  } else if (parsed.intent === "digest") {
+  if (parsed.intent === "digest") {
     const digest = await buildDigest(parsed.cadence ?? "weekly");
     answer = answerFromDigest(digest);
   } else if (parsed.intent === "paste") {
     const existing = session.briefingId ? getBriefing(session.briefingId) : undefined;
     if (!existing) {
-      answer = {
-        ...clarifyText(["role", "country", "budget"], false),
-        text: "Paste after a briefing is open — first type the role, country, and budget, then drop LinkedIn / Greenhouse notes here.",
-      };
+      const d = fillAsk(parsed);
+      const briefing = createBriefing({
+        title: d.role,
+        role: d.role,
+        skills: d.skills,
+        whyHiring: text.slice(0, 400),
+        countrySet: d.countrySet,
+        budget: d.budget,
+        currency: d.currency,
+        visaRequired: Boolean(parsed.visaRequired),
+        hmNotes: text,
+      });
+      const next = addUpload(briefing.id, {
+        id: randomUUID(),
+        kind: classifyIntel(text),
+        text: text.slice(0, 20000),
+        addedAt: new Date().toISOString(),
+      });
+      session.briefingId = briefing.id;
+      answer = answerFromEngine(await runEngine(next ?? briefing));
+      const note = assumptionLine(d.assumed);
+      if (note) answer = { ...answer, text: `${note}\n\n${answer.text}` };
     } else {
       const next = addUpload(existing.id, {
         id: randomUUID(),
@@ -94,7 +111,22 @@ export async function handleChat(sessionId: string | undefined, message: string)
   } else if (parsed.intent === "followup") {
     const existing = session.briefingId ? getBriefing(session.briefingId) : undefined;
     if (!existing) {
-      answer = clarifyText(parsed.missing.length ? parsed.missing : ["role", "country", "budget"], true);
+      const d = fillAsk(parsed);
+      const briefing = createBriefing({
+        title: d.role,
+        role: d.role,
+        skills: d.skills,
+        whyHiring: text.slice(0, 400),
+        countrySet: d.countrySet,
+        budget: d.budget,
+        currency: d.currency,
+        visaRequired: Boolean(parsed.visaRequired),
+        hmNotes: text,
+      });
+      session.briefingId = briefing.id;
+      answer = answerFromEngine(await runEngine(briefing), { locationHint: parsed.locationHint });
+      const note = assumptionLine(d.assumed);
+      if (note) answer = { ...answer, text: `${note}\n\n${answer.text}` };
     } else {
       const next = applyParse(existing, parsed) ?? existing;
       answer = answerFromEngine(await runEngine(next), {
@@ -103,19 +135,22 @@ export async function handleChat(sessionId: string | undefined, message: string)
       });
     }
   } else {
+    const d = fillAsk(parsed);
     const briefing = createBriefing({
-      title: parsed.role ?? "Hiring question",
-      role: parsed.role ?? "Role",
-      skills: parsed.skills,
+      title: d.role,
+      role: d.role,
+      skills: d.skills,
       whyHiring: text.slice(0, 400),
-      countrySet: parsed.countrySet ?? "UK",
-      budget: parsed.budget ?? 0,
-      currency: parsed.currency ?? (parsed.countrySet === "US" ? "USD" : "GBP"),
+      countrySet: d.countrySet,
+      budget: d.budget,
+      currency: d.currency,
       visaRequired: Boolean(parsed.visaRequired),
       hmNotes: text,
     });
     session.briefingId = briefing.id;
     answer = answerFromEngine(await runEngine(briefing), { locationHint: parsed.locationHint });
+    const note = assumptionLine(d.assumed);
+    if (note) answer = { ...answer, text: `${note}\n\n${answer.text}` };
   }
 
   if (answer.briefingId) session.briefingId = answer.briefingId;

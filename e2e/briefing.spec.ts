@@ -6,6 +6,15 @@ test("chat home is the product", async ({ page }) => {
   await expect(page.getByLabel("Ask Talent Intelligence")).toBeVisible();
 });
 
+test("any typed ask still returns live data", async ({ page }) => {
+  await page.goto("/");
+  await page.getByLabel("Ask Talent Intelligence").fill("where should we hire");
+  await page.getByRole("button", { name: "Send" }).click();
+  await expect(page.getByText(/Live briefing|Recommend |Manchester|Cambridge/i).first()).toBeVisible({
+    timeout: 60_000,
+  });
+});
+
 test("typed UK Senior SWE question returns a live briefing", async ({ page }) => {
   await page.goto("/");
   await page.getByRole("button", { name: "UK Senior SWE, £90k" }).click();
