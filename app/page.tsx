@@ -2,46 +2,40 @@ import { AppShell } from "@/components/AppShell";
 import { ConnectionStrip } from "@/components/ConnectionStrip";
 import Link from "next/link";
 
+export const dynamic = "force-dynamic";
+
 export default function Home() {
   return (
     <AppShell>
-      <section className="max-w-3xl">
-        <p className="chip chip-purple">Internal · Roku Talent Intelligence</p>
-        <h1 className="display text-5xl mt-4">
-          The headcount decision engine — not another candidate search.
-        </h1>
-        <p className="text-lg text-[#cbbbe3] mt-4">
-          Tell us the role, the country, and the budget. We tell you where the money
-          actually lands, whether talent exists, and when finance, recruiting, and
-          engineering should plan for someone in seat.
-        </p>
-        <div className="flex flex-wrap gap-3 mt-8">
-          <Link href="/demo" className="btn btn-primary no-underline">
-            Run TA leadership demo
-          </Link>
-          <Link href="/briefings/new" className="btn btn-ghost no-underline">
-            New briefing
-          </Link>
-          <Link href="/reports/weekly" className="btn btn-ghost no-underline">
-            Weekly recruiter digest
-          </Link>
-        </div>
-        <div className="mt-8">
-          <ConnectionStrip />
-        </div>
+      <p className="chip chip-purple">Roku Talent Intelligence · Live demo</p>
+      <h1 className="display text-5xl mt-4 max-w-3xl">Two things this engine does</h1>
+      <p className="text-lg text-[#cbbbe3] mt-4 max-w-2xl">
+        Open either. No setup. Market data is live (layoffs, UK cuts). Internal org is labelled
+        Demo until Glean is on the Roku network.
+      </p>
+      <section className="grid md:grid-cols-2 gap-6 mt-10">
+        <Link href="/demo" className="card no-underline text-white block hover:border-[var(--roku-teal)]">
+          <p className="text-[11px] uppercase tracking-[0.18em] text-[var(--roku-teal)] m-0">1 · Decision</p>
+          <h2 className="display text-3xl mt-2">Where to hire, what it costs, when they start</h2>
+          <p className="text-sm text-[#cbbbe3] mt-3">
+            Hiring manager briefing: UK Senior Software Engineer, £90k. Location scorecard, money,
+            P50/P75 start dates for finance and engineering. Live Market Pulse.
+          </p>
+          <p className="mt-4 font-bold text-[var(--roku-teal)]">Open live briefing →</p>
+        </Link>
+        <Link href="/reports/weekly" className="card no-underline text-white block hover:border-[var(--roku-teal)]">
+          <p className="text-[11px] uppercase tracking-[0.18em] text-[var(--roku-teal)] m-0">2 · Digest</p>
+          <h2 className="display text-3xl mt-2">Live weekly pulse for recruiters</h2>
+          <p className="text-sm text-[#cbbbe3] mt-3">
+            What moved this week in our market — only events mapped to Roku desks (Cambridge
+            embedded/ML, Manchester cloud-native, US player/cloud/ads). Not a tech magazine.
+          </p>
+          <p className="mt-4 font-bold text-[var(--roku-teal)]">Open live digest →</p>
+        </Link>
       </section>
-      <section className="grid md:grid-cols-3 gap-4 mt-12">
-        {[
-          ["Where", "Cambridge vs Cardiff vs Manchester vs Austin — talent, cost of living, and whether Roku can actually employ there."],
-          ["Money", "Official prices from the ONS (Office for National Statistics, UK) and BEA (Bureau of Economic Analysis, US). Same band, different living standard. Finance sees first payroll month."],
-          ["When", "P50 (likely) and P75 (conservative) start dates. UK notice is not US notice. Engineering sees in-seat week."],
-        ].map(([t, d]) => (
-          <article key={t} className="card">
-            <h2 className="display text-2xl">{t}</h2>
-            <p className="text-sm text-[#cbbbe3]">{d}</p>
-          </article>
-        ))}
-      </section>
+      <div className="mt-10">
+        <ConnectionStrip />
+      </div>
     </AppShell>
   );
 }

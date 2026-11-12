@@ -20,11 +20,14 @@ export function AppShell({
           </span>
         </Link>
         <nav className="no-print flex flex-wrap items-center gap-3 text-sm">
-          <Link href="/briefings/new" className="text-white no-underline">
-            New briefing
+          <Link href="/demo" className="text-white no-underline">
+            Live briefing
           </Link>
           <Link href="/reports/weekly" className="text-white no-underline">
-            Weekly digest
+            Live digest
+          </Link>
+          <Link href="/briefings/new" className="text-white no-underline">
+            New briefing
           </Link>
           <Link href="/reports/monthly" className="text-white no-underline">
             Monthly digest
