@@ -44,11 +44,6 @@ export function ChatApp() {
   const boxRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
-    const saved = sessionStorage.getItem("ti-session");
-    if (saved) setSessionId(saved);
-  }, []);
-
-  useEffect(() => {
     listRef.current?.lastElementChild?.scrollIntoView({ block: "nearest", behavior: "smooth" });
   }, [turns, busy]);
 
@@ -67,7 +62,10 @@ export function ChatApp() {
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message, sessionId }),
+        body: JSON.stringify({
+          message,
+          sessionId: sessionId ?? sessionStorage.getItem("ti-session") ?? undefined,
+        }),
       });
       const json = await res.json();
       if (!res.ok) {
